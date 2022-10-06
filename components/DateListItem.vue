@@ -8,7 +8,7 @@
     </v-list-item-content>
 
     <v-list-item-action>
-      <v-icon color="accent"> mdi-delete </v-icon>
+      <v-icon color="accent" @click="onRemove()"> mdi-delete </v-icon>
     </v-list-item-action>
   </v-list-item>
 </template>
@@ -24,6 +24,10 @@ export default {
       type: DateTime,
       // 必須項目の指定
       required: true,
+    },
+    onRemove: {
+      type: Function,
+      default: () => {},
     },
   },
 };
