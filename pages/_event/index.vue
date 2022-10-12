@@ -89,7 +89,7 @@
           <v-toolbar-title>Vote</v-toolbar-title>
           <v-spacer />
           <v-toolbar-items>
-            <v-btn text> Save </v-btn>
+            <v-btn text @click="saveMyVote"> Save </v-btn>
           </v-toolbar-items>
         </v-toolbar>
         <v-card-text>
@@ -167,64 +167,19 @@ export default {
   },
   computed: {
     eventId() {
-      return "eventId";
+      return this.$store.getters.eventId;
     },
     title() {
-      return "タイトル";
+      return this.$store.getters.title;
     },
     description() {
-      return "ほげほげほげほげほげ";
+      return this.$store.getters.description;
     },
     dates() {
-      // 2章で実装したイベント編集コンポーネントのdatesと同じデータ構造
-      return [
-        {
-          id: 1,
-          from: DateTime.fromISO("2021-01-01").set({ hour: 15 }),
-        },
-        {
-          id: 2,
-          from: DateTime.fromISO("2021-01-02").set({ hour: 15 }),
-        },
-        {
-          id: 3,
-          from: DateTime.fromISO("2021-01-03").set({ hour: 15 }),
-        },
-      ];
+      return this.$store.getters.dates;
     },
     votes() {
-      // 投票データ
-      // voteは { [dateのid]: レート } として保持
-      // レートは 2, 1, 0 で、それぞれ ○, △, ✕ の表示に対応している
-      return [
-        {
-          id: 1,
-          name: "れい",
-          vote: {
-            1: 2,
-            2: 2,
-            3: 1,
-          },
-        },
-        {
-          id: 2,
-          name: "りお",
-          vote: {
-            1: 0,
-            2: 2,
-            3: 0,
-          },
-        },
-        {
-          id: 3,
-          name: "かえで",
-          vote: {
-            1: 1,
-            2: 2,
-            3: 0,
-          },
-        },
-      ];
+      return this.$store.getters.votes;
     },
     highlightScore() {
       // scoresから `values` つまり点数だけを取って配列にする
@@ -260,6 +215,44 @@ export default {
     closeVoteDialog() {
       this.showVoteDialog = false;
     },
+    saveMyVote() {
+      const eventId = this.$route.params.event;
+      this.$store.dispatch("setEvent", {
+        id: eventId,
+        votes: [
+          ...this.votes.filter((v) => v.id !== this.myId),
+          {
+            id: +new Date(),
+            name: this.myName,
+            vote: this.myVote,
+          },
+        ],
+      });
+      this.closeVoteDialog();
+      // 投票モーダルを閉じたら表示用の変数をクリアしておく
+      this.myId = 0;
+      this.myName = "";
+      this.myVote = {};
+    },
+  },
+  beforeMount() {
+    // URLからイベントデータを取得する
+    const eventId = this.$route.params.event;
+
+    if (eventId !== this.eventId) {
+      // 前に表示していたイベントがあるかもしれないので消す
+      this.$store.dispatch("clearEvent");
+      // Firestoreからデータを取得してストアにセットする
+      this.$store
+        .dispatch("fetchEvent", eventId)
+        // actionが失敗したらNuxtの404エラーページを表示する
+        .catch((_) => {
+          this.$nuxt.error({
+            statusCode: 404,
+            message: "Event Not Found",
+          });
+        });
+    }
   },
 };
 </script>
