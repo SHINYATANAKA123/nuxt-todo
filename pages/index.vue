@@ -1,21 +1,4 @@
-<template>
-  <v-container>
-    <event-editor v-model="event" />
-    <v-btn
-      fixed
-      elevation="2"
-      fab
-      large
-      bottom
-      right
-      color="primary"
-      :disabled="!event.dates.length"
-      @click="submit"
-    >
-      Go!
-    </v-btn>
-  </v-container>
-</template>
+<template></template>
 
 <script>
 export default {
